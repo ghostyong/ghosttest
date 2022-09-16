@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <title>test</title>
+    <style>
+      p {
+        font-size: 20px;
+        text-align: center;
+      }
+
+      button {
+        position: relative;
+        z-index: 999;
+      }
+
+      .input {
+        width: 300px;
+        height: 35px;
+        display: block;
+        margin: 0 auto;
+        outline: none;
+        font-size: 30px;
+        position: relative;
+        z-index: 999;
+      }
+
+      .jl {
+        width: 100%;
+        height: 100vh;
+        text-align: center;
+        font-size: 50px;
+      }
+
+      html,
+      body,
+      #container {
+        height: 100%;
+      }
+
+      .info {
+        width: 26rem;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        background-color: lightblue;
+        font-family: Helvetica;
+      }
+      #stage,
+      video,
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      canvas {
+        z-index: 99;
+      }
+    </style>
+  </head>
+<!-- threejs -->
+<script src="https://lonely1201.github.io/Juejin/mooncake/js/three.js"></script>
+<script src="https://lonely1201.github.io/Juejin/mooncake/js/OrbitControls.js"></script>
+<script src="https://lonely1201.github.io/Juejin/mooncake/js/loader/OBJLoader.js"></script>
+<script src="https://lonely1201.github.io/Juejin/mooncake/js/loader/TGALoader.js"></script>
+  <body>
+    <div id="stage"></div>
+    <button>Promise测试-随机数</button>
+    <!-- <p>debounce测试</p> -->
+    <p>v-model 双向绑定实现原理：</p>
+    <input type="text" class="input" />
+    <p class="txt"></p>
+    <!-- <p class="jl">throttle测试</p> -->
+    <script>
+      let stage = document.querySelector("#stage");
+      let container;
+      let scene, camera, renderer, controls;
+      let SCREEN_WIDTH = window.innerWidth;
+      let SCREEN_HEIGHT = window.innerHeight;
+      let angle = 90;
+      let nearest = 1;
+      let farthest = 1000;
+      init();
+      function init() {
+        container = document.createElement("div");
+        stage.appendChild(container);
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(
+          angle,
+          SCREEN_WIDTH / SCREEN_HEIGHT,
+          nearest,
+          farthest
+        );
+        camera.position.set(400, 20, 30);
+        scene.add(new THREE.AmbientLight(4210752, 3));
+        let light = new THREE.DirectionalLight(16777215, 1);
+        light.position.set(0, 50, 50);
+        scene.add(light);
+        let obj_loader = new THREE.OBJLoader();
+        obj_loader.setPath(
+          "https://lonely1201.github.io/Juejin/mooncake/models/mooncake/"
+        );
+        let tga_loader = new THREE.TGALoader();
+        let material = new THREE.MeshPhongMaterial({
+          map: tga_loader.load(
+            "https://lonely1201.github.io/Juejin/mooncake/models/mooncake/Sofa_OS_0727_01___Default_Diffuse.tga"
+          ),
+          normalMap: tga_loader.load(
+            "https://lonely1201.github.io/Juejin/mooncake/models/mooncake/Sofa_OS_0727_01___Default_Normal.tga"
+          ),
+          specularMap: tga_loader.load(
+            "https://lonely1201.github.io/Juejin/mooncake/models/mooncake/Sofa_OS_0727_01___Default_S.tga"
+          ),
+          bumpMap: tga_loader.load(
+            "https://lonely1201.github.io/Juejin/mooncake/models/mooncake/Sofa_OS_0727_01___Default_Bump.tga"
+          ),
+        });
+        obj_loader.load("mooncake.obj", function (group) {
+          let geometry = group.children[0].geometry;
+          geometry.attributes.uv2 = geometry.attributes.uv;
+          geometry.center();
+          let mesh = new THREE.Mesh(geometry, material);
+          mesh.scale.multiplyScalar(0.3);
+          scene.add(mesh);
+        });
+        renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+        });
+        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        container.appendChild(renderer.domElement);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 0, 0);
+        animate();
+      }
+      function animate() {
+        requestAnimationFrame(animate);
+        render();
+        window.addEventListener("resize", onWindowResize, false);
+      }
+      function render() {
+        renderer.render(scene, camera);
+      }
+      function onWindowResize() {
+        SCREEN_WIDTH = window.innerWidth;
+        SCREEN_HEIGHT = window.innerHeight;
+        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+        camera.updateProjectionMatrix();
+      }
+      // 权限导航数据整理
+      let dataArr = [
+        {
+          id: 2,
+          pid: 0,
+          path: "/学生管理-课程管理",
+          name: "课程管理",
+          title: "课程管理",
+        },
+        {
+          id: 6,
+          pid: 0,
+          path: "/学生管理-学生",
+          name: "学生",
+          title: "学生",
+        },
+        {
+          id: 3,
+          pid: 2,
+          path: "/学生管理-课程管理-课程操作",
+          name: "课程操作",
+          title: "课程操作",
+        },
+        {
+          id: 4,
+          pid: 3,
+          path: "/学生管理-课程管理-课程操作-课程数据",
+          name: "课程数据",
+          title: "课程数据",
+        },
+        {
+          id: 5,
+          pid: 2,
+          path: "/学生管理-课程管理-增加课程",
+          name: "增加课程",
+          title: "增加课程",
+        },
+        {
+          id: 7,
+          pid: 6,
+          path: "/学生管理-学生-学生名字",
+          name: "学生-名字",
+          title: "学生-名字",
+        },
+        {
+          id: 8,
+          pid: 6,
+          path: "/学生管理-学生-学生成绩",
+          name: "学生-成绩",
+          title: "学生-成绩",
+        },
+      ];
+      console.log(dataArr);
+
+      function getMenu(data) {
+        // 区分一级菜单和其他子菜单
+        let parents = data.filter((p) => p.pid === 0),
+          children = data.filter((c) => c.pid !== 0);
+
+        // 筛选子菜单
+        function checkChildren(parents, children) {
+          parents.map((p) => {
+            children.map((c, i) => {
+              if (p.id === c.pid) {
+                if (p.children) {
+                  p.children.push(c);
+                } else {
+                  p.children = [c];
+                }
+                // 选出剩下pid不等的（孙子辈）做为children参数轮循
+                // 拷贝一份children,删除儿子辈满足要求的，剩下就是孙子辈，去做轮循
+                let _c = JSON.parse(JSON.stringify(children));
+                _c.splice(i, 1);
+                checkChildren([c], _c);
+              }
+            });
+          });
+        }
+        checkChildren(parents, children);
+
+        return parents;
+      }
+      console.log("整理后的菜单", getMenu(dataArr));
+    </script>
+    <script>
+      // v-model 双向绑定实现原理
+      let objs = {};
+      Object.defineProperty(objs, "value", {
+        // 取值
+        get: function () {
+          console.log("取值");
+        },
+        // 设置值
+        set: function (val) {
+          document.querySelector(".txt").innerText = val;
+        },
+      });
+      document.querySelector("input").addEventListener("keyup", function (e) {
+        objs.value = e.target.value;
+      });
+    </script>
+
+    <script>
+      let inp = document.querySelector("input");
+      // let timer = null
+      // inp.oninput = function debounce() {
+      //     if (timer) {
+      //         clearTimeout(timer)
+      //     }
+      //     timer = setTimeout(() => {
+      //         console.log(111)
+      //     }, 1000)
+      // }
+      // 封装debounce
+      // function debounce(func, time) {
+      //     var timer = null;
+      //     return function () {
+      //         if (timer !== null) {
+      //             clearTimeout(timer)
+      //         }
+      //         timer = setTimeout(func, time)
+      //     }
+      // }
+
+      // function funcs() {
+      //     console.log('防抖处理后请求的数据');
+      // }
+      // inp.oninput = debounce(funcs, 1000)
+
+        function debounce(func, delay) {
+            let result = '';
+            return function () {
+                if(result){
+                    clearTimeout(result);
+                }
+                result = setTimeout(func, delay);
+            }
+        }
+
+        function funcss() {
+            console.log('防抖请求数据');
+        }
+
+      inp.oninput = debounce(funcss, 1000);
+
+      // let throt = true
+      // window.onscroll = function throttle() {
+      //     if (throt == true) {
+      //         console.log(0)
+      //         setTimeout(() => {
+      //             throt = true
+      //         }, 1000)
+      //     }
+      //     throt = false
+      // }
+      // 封装throttle
+      function throttle(funcs2, time) {
+        var timer = true;
+        return function () {
+          if (timer) {
+            funcs2();
+            setTimeout(() => {
+              timer = true;
+            }, time);
+          }
+          timer = false;
+        };
+      }
+
+      function funcs2() {
+        console.log("节流处理后请求的数据");
+      }
+      window.onscroll = throttle(funcs2, 1000);
+
+      // 任意数求和
+      function sum() {
+        var total = null;
+        for (var i = 0; i < arguments.length; i++) {
+          var item = arguments[i];
+          item = parseInt(item);
+          !isNaN(item) ? (total += item) : null;
+        }
+        return total;
+      }
+      console.log(sum(4, 5, 6, "10", "AA", 10));
+
+      // 变量提升
+      console.log(fn);
+      if (1 === 1) {
+        console.log(fn());
+
+        function fn() {
+          console.log("ok");
+        }
+      }
+      console.log(fn());
+
+      // Promise
+      document.querySelector("button").addEventListener("click", function () {
+        let a = Math.ceil(Math.random() * 100);
+        console.log(a);
+        let p = new Promise((resolve, reject) => {
+          setTimeout(function () {
+            if (a < 30) {
+              resolve(a);
+            } else {
+              reject(a);
+            }
+          }, 1000);
+        });
+        p.then(
+          (value) => {
+            alert("恭喜中奖了，号码是" + value);
+          },
+          (result) => {
+            alert("谢谢参与，号码是" + result);
+          }
+        );
+      });
+
+      function sendAJAX(url) {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.responseType = "json";
+          xhr.open("GET", url);
+          xhr.send();
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(xhr.response);
+              } else {
+                reject(xhr.status);
+              }
+            }
+          };
+        });
+      }
+
+      // async await (await后面跟一个promise对象，效果相当于then,可以直接拿到异步数据)
+      document
+        .querySelector("button")
+        .addEventListener("click", async function () {
+          let duanzi = await sendAJAX("https://api.apiopen.top/getJoke");
+          console.log(duanzi);
+          // sendAJAX('https://api.apiopen.top/getJoke').then(value => {
+          //     console.log(value)
+          // }, reason => {
+          //     console.log(reason)
+          // })
+        });
+
+      // 闭包
+      function func() {
+        let a = "fn函数是闭包";
+
+        function fn() {
+          console.log(a);
+        }
+        return fn;
+      }
+      let func1 = func();
+      func1();
+
+      // 通过回调函数，获取异步数据-----实现先吃火锅，再喝奶茶
+      // function getTea(fn) {
+      //     setTimeout(function () {
+      //         fn('奶茶')
+      //     }, 1000)
+      // }
+      // function getHot(fn) {
+      //     setTimeout(function () {
+      //         fn('火锅')
+      //     }, 2000)
+      // }
+      // getHot(function (data) {
+      //     console.log(data);
+      //     getTea(function (data) {
+      //         console.log(data);
+      //     });
+      // });
+
+      // 通过promise修改上面例子
+      function getTea() {
+        return new Promise(function (resolve) {
+          setTimeout(function () {
+            resolve("奶茶");
+          }, 1000);
+        });
+      }
+
+      function getHot() {
+        return new Promise(function (resolve) {
+          setTimeout(function () {
+            resolve("火锅");
+          }, 2000);
+        });
+      }
+      getHot()
+        .then(function (data) {
+          console.log(data);
+          return getTea(); // 一定要返回一个promise对象，接下来的then的回调函数才会有返回值，不然就返回undefined
+        })
+        .then(function (data) {
+          console.log(data);
+        });
+      // 使用async await实现和上面一样的效果
+      async function getData() {
+        let hot = await getHot();
+        let tea = await getTea();
+        console.log(hot);
+        console.log(tea);
+      }
+      getData();
+
+      async function promi() {
+        return 1;
+      }
+      let pro = promi();
+      console.log(pro); // Promise {1}    async返回的是一个promise对象
+      pro.then(function (data) {
+        console.log(data); // 通过调用then方法可以拿到async的返回值
+      });
+
+      //js执行顺序：1、同步任务；2、process.nextTick；3、微任务（promise.then）；
+      // 4、宏任务（计时器、ajax、读取文件）；5、setImmediate(当前事件循环结束后执行，也就是第一个宏任务结束后执行)
+
+      // 将数组分页
+      var paging = function (array, size) {
+        var start = null;
+        var end = null;
+        var result = [];
+        for (var i = 0; i < Math.ceil(array.length / size); i++) {
+          start = i * size;
+          end = start + size;
+          result.push(array.slice(start, end));
+        }
+        return result;
+      };
+
+      console.log(paging([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 3));
+
+      var p = new Promise((resolve) => {
+        console.log(666);
+      });
+    </script>
+    <!-- 面试题汇总 -->
+    <script>
+      // this指向烧脑题
+      var x = 0;
+      var obj = {
+        x: 3,
+        p: () => {
+          console.log(this.x, "b");
+        },
+      };
+
+      function Fn() {
+        (this.a = 1),
+          (this.b = {
+            x: 1,
+            p: function (callback) {
+              this.c = this.x + 1;
+              console.log(this.x, "a");
+              obj.p.apply(this); // 得出结论，如果是箭头函数，this指向直接考虑箭头函数外层的this，此时的改变this指向的方法无效；
+              callback();
+            },
+          });
+      }
+      var fn = new Fn();
+      fn.b.p(function () {
+        console.log(this.x, "c");
+      });
+
+      function myFunction() {
+        fn.b.p(() => {
+          console.log(this.x, "d");
+        });
+      }
+      obj.fn = myFunction;
+      obj.fn();
+
+      // call、apply、bind区别。都用做改变this指向，但使用方式略微不同,call、apply默认就调用，bind需要再调用一次
+      // obj1.func.call(obj2, 'argument1', 'argument2')
+      // obj1.func.apply(obj2, ['argument1', 'argument2'])
+      // obj1.func.bind(obj2)('argument1', 'argument2')
+    </script>
+    <script>
+      // 处理数组的相关方法（改变原数组：shift、unshift、pop、push、sort、reverse、splice; 不改变原数组： concat、slice、filter、map等）
+      // 数组去重(使用es6的Set方法，然后用...扩展)   还可以用indexOf、双循环、filter等对数组去重
+      var a = document.querySelectorAll("*"); // 伪数组
+      a = [...a]; // 伪数组转成数组
+      a = a.map((v) => v.tagName);
+      a = [...new Set(a)]; // Array.from(new Set(a)),都可将Set类型的数据转成数组
+      console.log(a);
+
+      //js运行机制\事件捕获、冒泡、事件委托\虚拟dom和diff算法\MVC、MVVM定义及区别\性能优化\原型链\vue3.0\watch、computed区别
+      // （隐式）原型链：你的__proto__来自你构造函数的prototype
+      // function MM(name, age) {
+      //     // this.name = '杨幂',
+      //     this.age = 18
+      // }
+      // MM.prototype.name = '宋轶'
+      // Object.prototype.name = '范冰冰'
+      // var mm = new MM();
+      // console.log(MM.prototype.__proto__);
+      // console.log(mm.name);
+      // var hand = {
+      //     whichOne: "right hand",
+      //     someFunction: function () {
+      //         console.log("not safe for work.");
+      //     }
+      // };
+      // console.log(hand.__proto__);
+      // js原型继承的实现原理
+      function MM(name) {
+        this.name = name;
+      }
+      MM.prototype = {
+        type: "美女",
+      };
+      var mmA = new MM("杨幂");
+      var mmB = new MM("范冰冰");
+      console.log(mmA.type);
+      console.log(mmB.type);
+
+      // forEach、map、some、reduce、filter
+      let qqq = [1, 5, 2, 6, 4, 2, 10];
+      let sums = qqq.reduce((prev, cur) => prev + cur, 0); // 使用reduce求和
+      console.log(sums);
+
+      let www = ["dog", "cat", "dog", "duck", "cat", "dog"];
+      const count = (arr) => {
+        let obj = arr.reduce((prev, cur) => {
+          prev[cur] = prev[cur] ? prev[cur] + 1 : 1; // 使用reduce统计每个元素的个数
+          return prev;
+        }, {});
+        return obj;
+      };
+      console.log(count(www));
+    </script>
+  </body>
+</html>
